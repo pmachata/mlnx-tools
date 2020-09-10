@@ -284,7 +284,7 @@ def print_dscp2prio_sysfs():
 			print(temp)
 	f.close()
 
-def pretty_print(prio_tc, tsa, tcbw, ratelimit, pfc_en, trust, pfc_delay, buffer_size, prio2buffer):
+def pretty_print(prio_tc, tsa, tcbw, ratelimit, pfc_en, trust, pfc_delay, buffer_size, tot_size, prio2buffer):
 	if (ctrl.get_dcbx() & DCB_CAP_DCBX_HOST):
 		print("DCBX mode: OS controlled")
 	else:
@@ -304,6 +304,8 @@ def pretty_print(prio_tc, tsa, tcbw, ratelimit, pfc_en, trust, pfc_delay, buffer
 		msg = "Receive buffer size (bytes): "
 		for buf in range(8):
 			msg += "%1d," % (buffer_size[buf])
+		if tot_size is not None:
+			msg += "total_size=%d" % tot_size
 		print(msg)
 
 	tc2up = defaultdict(list)
@@ -538,13 +540,15 @@ try:
 	if (is_buffer_sysfs):
 		prio2buffer = get_prio2buffer_sysfs()
 		buffer_size = get_buffer_size_sysfs()
+		tot_size = None
 	else:
-		prio2buffer, buffer_size = ctrl.get_ieee_dcb_buffer()
+		prio2buffer, buffer_size, tot_size = ctrl.get_ieee_dcb_buffer()
 
 except:
 	buffer_error = 1
 	buffer_size = [0, 0, 0, 0, 0, 0, 0, 0]
 	prio2buffer = [0, 0, 0, 0, 0, 0, 0, 0]
+	tot_size = None
 	print ("Buffers commands are not supported on your system")
 	if options.buffer_size or options.prio2buffer:
 		sys.exit(1)
@@ -578,9 +582,11 @@ try:
 			set_buffer_size_sysfs(buffer_size)
 			prio2buffer = get_prio2buffer_sysfs()
 			buffer_size = get_buffer_size_sysfs()
+			tot_size = None
 		else:
-			ctrl.set_dcb_buffer(_prio2buffer = prio2buffer, _buffer_size = buffer_size)
-			prio2buffer, buffer_size = ctrl.get_ieee_dcb_buffer()
+			ctrl.set_dcb_buffer(_prio2buffer = prio2buffer, _buffer_size = buffer_size,
+					    _tot_size = tot_size)
+			prio2buffer, buffer_size, tot_size = ctrl.get_ieee_dcb_buffer()
 except:
 	buffer_error = 1
 	if options.buffer_size or options.prio2buffer:
@@ -705,4 +711,4 @@ if options.tsa or options.tc_bw or options.prio_tc:
 		print(e)
 		sys.exit(1)
 
-pretty_print(prio_tc, tsa, tc_bw, ratelimit, pfc_en, trustObj.trust, pfc_delay, buffer_size, prio2buffer)
+pretty_print(prio_tc, tsa, tc_bw, ratelimit, pfc_en, trustObj.trust, pfc_delay, buffer_size, tot_size, prio2buffer)

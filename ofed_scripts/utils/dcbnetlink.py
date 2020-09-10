@@ -251,9 +251,10 @@ class DcbController:
 		buffer_size = array.array('I')
 		buffer_size.fromstring(ieee[DCB_ATTR_DCB_BUFFER].str()[8:])
 
-		return prio2buffer, buffer_size
+		return prio2buffer, buffer_size[:8], buffer_size[8]
 
-	def set_dcb_buffer(self, _prio2buffer, _buffer_size):
+	def set_dcb_buffer(self, _prio2buffer, _buffer_size, _tot_size):
+		_buffer_size.append(_tot_size)
 		dcb_buffer = _prio2buffer.tostring() + _buffer_size.tostring()
 
 		intf = NulStrAttr(DCB_ATTR_IFNAME, self.intf)
