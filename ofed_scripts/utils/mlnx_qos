@@ -401,7 +401,7 @@ if (options.dcbx != None):
 
 # ********* pfc command ******************************
 if options.cable_len:
-	pfc_delay = parse_int(options.cable_len, 0, 1000, "cable_len")
+	pfc_delay = parse_int(options.cable_len, 0, 0xffff, "cable_len")
 
 if options.pfc:
 	i = 0
