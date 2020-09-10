@@ -109,6 +109,8 @@ DCB_ATTR_DCB_BUFFER = 10
 DCB_ATTR_IEEE_APP_UNSPEC = 0
 DCB_ATTR_IEEE_APP = 1
 
+IEEE_8021QAZ_APP_SEL_ETHERTYPE	= 1
+
 class DcbnlHdr:
 	def __init__(self, len, type):
 		self.len = len
@@ -503,6 +505,11 @@ class DcbAppTable:
 
 			if temp != "":
 				print(temp)
+
+	def printDefaultPriority(self):
+		for app in self.apps.values():
+			if app.selector == IEEE_8021QAZ_APP_SEL_ETHERTYPE:
+				print("\tprio:%d" % app.priority)
 
 	def delAppEntry(self, ctrl, selector):
 		for i in range(len(self.apps)):
